@@ -1,3 +1,4 @@
+/* --- VARIABLES DE DISEÑO --- */
 :root {
     --bg-color: #FFFFFF;
     --text-main: #2C3E50;
@@ -5,6 +6,7 @@
     --accent-adventure: #3A5F41;
     --accent-active: #8E6E46;
     --success-color: #27AE60;
+    --gold: #D4AF37;
     --font-titles: 'Montserrat', sans-serif;
     --font-body: 'Lora', serif;
 }
@@ -29,19 +31,62 @@ body {
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
-h1 { font-family: var(--font-titles); font-size: 1.8rem; color: var(--accent-adventure); margin-bottom: 10px; }
-p { line-height: 1.5; margin-bottom: 10px; }
+/* --- COMPONENTE: TIMELINE DE VIAJE --- */
+.travel-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 10px;
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
+}
 
-.lottie-container { 
-    width: 100%; 
-    height: 250px; 
-    margin: 10px auto; 
+.timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: #E0E0E0;
+    z-index: 1;
+    transform: translateY(-50%);
+}
+
+.step {
+    width: 35px;
+    height: 35px;
+    background: white;
+    border: 2px solid #E0E0E0;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 2;
+    font-weight: bold;
+    font-size: 0.8rem;
+    font-family: var(--font-titles);
+    transition: all 0.5s ease;
+}
+
+.step.active { border-color: var(--accent-adventure); background: var(--accent-adventure); color: white; transform: scale(1.2); }
+.step.completed { border-color: var(--success-color); background: var(--success-color); color: white; }
+
+/* --- UI CARDS & BUTTONS --- */
+h1 { font-family: var(--font-titles); font-size: 1.6rem; color: var(--accent-adventure); margin-bottom: 10px; }
+
+.lottie-container { width: 100%; height: 250px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
+
+.clue-card {
+    background: #FFFEF9;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-left: 6px solid var(--accent-active);
+    text-align: left;
+    margin-bottom: 20px;
 }
 
 .btn {
@@ -54,42 +99,38 @@ p { line-height: 1.5; margin-bottom: 10px; }
     border-radius: 50px;
     cursor: pointer;
     transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn:active { background-color: var(--accent-adventure); color: white; }
 
-.clue-card {
-    background: #FFFEF9;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-left: 6px solid var(--accent-active);
-    text-align: left;
-}
-
 #distance-indicator {
     font-family: var(--font-titles);
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     padding: 6px 12px;
     border-radius: 20px;
-    display: inline-block;
     margin-top: 10px;
+    display: inline-block;
 }
 
 .cold { background-color: #F0F3F4; color: #95A5A6; }
 .warm { background-color: #FEF5E7; color: #E67E22; }
 .hot { background-color: #D4EFDF; color: #27AE60; animation: pulse 1s infinite; }
 
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-
-#debug-info {
-    position: fixed;
-    bottom: 5px;
-    left: 5px;
-    font-size: 9px;
-    color: #BDC3C7;
-    background: rgba(255,255,255,0.8);
-    padding: 2px 5px;
-    border-radius: 3px;
+/* --- PANTALLA FINAL --- */
+.final-card {
+    background: #fff;
+    border: 2px solid var(--gold);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15);
+    margin-top: -30px;
+    animation: slideUp 0.8s ease-out;
 }
+
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+#debug-info { position: fixed; bottom: 5px; left: 5px; font-size: 9px; color: #BDC3C7; }
