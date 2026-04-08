@@ -1,8 +1,6 @@
-/* --- VARIABLES DE DISEÑO --- */
 :root {
     --bg-color: #FFFFFF;
     --text-main: #2C3E50;
-    --text-secondary: #7F8C8D;
     --accent-adventure: #3A5F41;
     --accent-active: #8E6E46;
     --success-color: #27AE60;
@@ -21,34 +19,38 @@ body {
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 15px;
     overflow-x: hidden;
 }
 
-#app-container {
+#app-container { width: 100%; max-width: 450px; text-align: center; }
+
+/* --- MAPA --- */
+#map {
     width: 100%;
-    max-width: 400px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
+    height: 220px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 1;
+    border: 2px solid #EEE;
 }
 
-/* --- COMPONENTE: TIMELINE DE VIAJE --- */
+/* --- TIMELINE --- */
 .travel-timeline {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 10px;
-    margin-bottom: 20px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
     position: relative;
-    width: 100%;
 }
 
 .timeline-line {
     position: absolute;
     top: 50%;
-    left: 40px;
-    right: 40px;
+    left: 50px;
+    right: 50px;
     height: 2px;
     background: #E0E0E0;
     z-index: 1;
@@ -68,69 +70,66 @@ body {
     font-weight: bold;
     font-size: 0.8rem;
     font-family: var(--font-titles);
-    transition: all 0.5s ease;
+    transition: 0.4s;
 }
 
-.step.active { border-color: var(--accent-adventure); background: var(--accent-adventure); color: white; transform: scale(1.2); }
+.step.active { border-color: var(--accent-adventure); background: var(--accent-adventure); color: white; transform: scale(1.1); }
 .step.completed { border-color: var(--success-color); background: var(--success-color); color: white; }
 
-/* --- UI CARDS & BUTTONS --- */
-h1 { font-family: var(--font-titles); font-size: 1.6rem; color: var(--accent-adventure); margin-bottom: 10px; }
-
-.lottie-container { width: 100%; height: 250px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
+/* --- CARDS & BUTTONS --- */
+h1 { font-family: var(--font-titles); font-size: 1.5rem; color: var(--accent-adventure); margin-bottom: 10px; }
 
 .clue-card {
     background: #FFFEF9;
-    padding: 20px;
+    padding: 18px;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     border-left: 6px solid var(--accent-active);
     text-align: left;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .btn {
     font-family: var(--font-titles);
     font-weight: 700;
-    padding: 18px 30px;
+    padding: 16px 25px;
     border: 2px solid var(--accent-adventure);
-    background-color: transparent;
+    background: transparent;
     color: var(--accent-adventure);
     border-radius: 50px;
     cursor: pointer;
-    transition: 0.3s;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
-.btn:active { background-color: var(--accent-adventure); color: white; }
+.btn:active { background: var(--accent-adventure); color: white; }
 
 #distance-indicator {
     font-family: var(--font-titles);
     font-weight: 700;
-    font-size: 0.75rem;
-    padding: 6px 12px;
+    font-size: 0.7rem;
+    padding: 5px 10px;
     border-radius: 20px;
-    margin-top: 10px;
+    margin-top: 8px;
     display: inline-block;
 }
 
-.cold { background-color: #F0F3F4; color: #95A5A6; }
-.warm { background-color: #FEF5E7; color: #E67E22; }
-.hot { background-color: #D4EFDF; color: #27AE60; animation: pulse 1s infinite; }
+.cold { background: #F0F3F4; color: #95A5A6; }
+.warm { background: #FEF5E7; color: #E67E22; }
+.hot { background: #D4EFDF; color: #27AE60; animation: pulse 1s infinite; }
 
-/* --- PANTALLA FINAL --- */
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+/* --- FINAL SCREEN --- */
 .final-card {
-    background: #fff;
+    background: white;
     border: 2px solid var(--gold);
     padding: 25px;
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(212, 175, 55, 0.15);
-    margin-top: -30px;
-    animation: slideUp 0.8s ease-out;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-top: -20px;
+    animation: slideIn 0.8s ease-out;
 }
 
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
 
-#debug-info { position: fixed; bottom: 5px; left: 5px; font-size: 9px; color: #BDC3C7; }
+#debug-info { position: fixed; bottom: 5px; left: 5px; font-size: 8px; color: #CCC; }
