@@ -1,0 +1,173 @@
+/* --- VARIABLES DE DISEÑO: Paleta Aventura Elegante --- */
+:root {
+    --bg-color: #FFFFFF;
+    --text-main: #2C3E50;
+    --text-secondary: #7F8C8D;
+    
+    /* Colores de Aventura */
+    --accent-adventure: #3A5F41; /* Verde Musgo */
+    --accent-active: #8E6E46;    /* Marrón Cuero */
+    
+    --success-color: #27AE60;
+    --font-titles: 'Montserrat', sans-serif;
+    --font-body: 'Lora', serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent; /* Quita flash azul en móvil */
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+    overflow-x: hidden;
+}
+
+#app-container {
+    width: 100%;
+    max-width: 450px; /* Un poco más estrecho para inmersión */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Títulos con más fuerza */
+h1, h2 {
+    font-family: var(--font-titles);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+h1 { font-size: 1.6rem; color: var(--accent-adventure); margin-bottom: 5px; }
+h2 { font-size: 1.2rem; color: var(--text-main); }
+
+p { font-size: 1.05rem; line-height: 1.6; color: var(--text-main); }
+
+/* --- CONTENEDORES DE ANIMACIÓN LOTTIE --- */
+.lottie-container {
+    width: 100%;
+    height: 200px; /* Altura estándar para animaciones */
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Pantalla de Intro necesita una animación más grande */
+#lottie-intro {
+    height: 280px;
+}
+
+/* --- COMPONENTES DE AVENTURA --- */
+
+.btn {
+    font-family: var(--font-titles);
+    font-weight: 700;
+    padding: 16px 32px;
+    border: 2px solid var(--accent-adventure);
+    background-color: transparent;
+    color: var(--accent-adventure);
+    border-radius: 40px; /* Muy redondeado, tipo herramienta */
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(58, 95, 65, 0.1);
+}
+
+.btn:active {
+    background-color: var(--accent-adventure);
+    color: white;
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(58, 95, 65, 0.2);
+}
+
+/* Tarjeta de Pista: Estilo Cuaderno de Campo */
+.clue-card {
+    background: #FFFEF9; /* Blanco ligeramente frito/papel */
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    border: 1px solid #F1EFE0;
+    position: relative;
+    border-left: 5px solid var(--accent-active);
+}
+
+.clue-text {
+    font-style: italic;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    font-size: 1.15rem;
+    font-weight: 400;
+}
+
+/* Indicador de Distancia: Más visual */
+#distance-indicator {
+    font-family: var(--font-titles);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.cold { background-color: #ECF0F1; color: var(--text-secondary); }
+.warm { background-color: #FDEDEC; color: #E67E22; border: 1px solid #FADBD8;}
+.hot { background-color: #E8F8F5; color: var(--success-color); border: 1px solid #A3E4D7; font-weight: bold; animation: pulse 1.5s infinite;}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Backdoor sutil */
+#backdoor-panel {
+    margin-top: 25px;
+    padding-top: 10px;
+    border-top: 1px solid #EEEEEE;
+}
+
+#btn-emergency {
+    font-size: 0.75rem;
+    color: #BDC3C7;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    font-family: var(--font-titles);
+}
+
+#unlock-code {
+    padding: 12px;
+    border: 1px solid #D7DBDD;
+    border-radius: 8px;
+    text-align: center;
+    font-family: var(--font-titles);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#debug-info {
+    font-size: 0.65rem;
+    color: rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 3px;
+    left: 3px;
+    font-family: monospace;
+}
