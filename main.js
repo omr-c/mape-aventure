@@ -1,76 +1,59 @@
 /* =========================================================
-   CONFIGURACIÓN DE LA EXCURSIÓN
+   CONFIGURACIÓN DE HITOS
    ========================================================= */
 const waypoints = [
     { 
         id: 1, 
         lat: 19.251102613683297, 
         lng: -98.22911261075458, 
-        clue: "El inicio de la excursión. Sigue la línea azul para calibrar tu destino.", 
-        successMessage: "¡Sistema listo! La ruta se ha actualizado para el siguiente punto." 
+        clue: "Primer hito detectado. Sigue la guía de puntos azules.", 
+        successMessage: "¡Excelente! Has llegado al primer punto de control." 
     },
     { 
         id: 2, 
         lat: 19.251060831932246, 
         lng: -98.22923331016183, 
-        clue: "Sigue el rastro por la calle. El mapa te guía hacia el secreto.", 
-        successMessage: "¡Excelente avance! Estás muy cerca de completar la misión." 
+        clue: "La señal se mueve. Continúa por la ruta marcada.", 
+        successMessage: "Punto de control superado. El objetivo final está cerca." 
     },
     { 
         id: 3, 
         lat: 19.25098613119978, 
         lng: -98.22952701204791, 
-        clue: "Objetivo final detectado. Camina hasta que el indicador marque la meta.", 
-        successMessage: "¡HAS LLEGADO AL DESTINO FINAL!", 
+        clue: "Objetivo final a la vista. No te detengas hasta llegar a la meta.", 
+        successMessage: "¡SISTEMA COMPLETADO: DESTINO ALCANZADO!", 
         isFinal: true 
     }
 ];
 
-const config = { radius: 10 }; // Radio de llegada en metros
-
-/* =========================================================
-   ESTADO GLOBAL Y VARIABLES DE MAPA
-   ========================================================= */
-let state = {
-    currentIndex: 0,
-    isIntro: true,
-    isNear: false,
-    isFinished: false
-};
-
+let state = { currentIndex: 0, isIntro: true, isNear: false, isFinished: false };
 let map, userMarker, directionsService, directionsRenderer;
 
 const app = document.getElementById('app-container');
 
 /* =========================================================
-   MOTOR DE RENDERIZADO
+   SISTEMA DE RENDERIZADO
    ========================================================= */
 
 function render() {
     app.innerHTML = '';
-    
-    if (state.isIntro) {
-        renderIntro();
-    } else if (state.isFinished) {
-        renderFinal();
-    } else {
-        renderNavigation();
-    }
+    if (state.isIntro) renderIntro();
+    else if (state.isFinished) renderFinal();
+    else renderNavigation();
 }
 
 function renderIntro() {
     app.innerHTML = `
-        <h1 style="margin-top:20px;">Expedición de Viaje</h1>
-        <p>Sigue la ruta en tiempo real para descubrir el tesoro oculto.</p>
+        <h1 style="margin-top:20px;">Navegación Activa</h1>
+        <p>El sistema te guiará paso a paso mediante coordenadas satelitales.</p>
         <div id="lottie-box" style="height:250px;"></div>
-        <button class="btn" onclick="start()">Activar Navegación</button>
+        <button class="btn" onclick="start()">Iniciar Seguimiento</button>
     `;
     setTimeout(() => loadAnim('https://lottie.host/7e604f14-9492-49f9-9f79-e3623f990928/S0W9z8Cg0r.json'), 100);
 }
 
 function renderNavigation() {
     const pt = waypoints[state.currentIndex];
-    
     app.innerHTML = `
         <div class="travel-timeline">
             <div class="timeline-line"></div>
@@ -80,121 +63,82 @@ function renderNavigation() {
                 </div>
             `).join('')}
         </div>
-        
-        <div id="map" style="height: 300px; border-radius: 15px; margin-bottom: 15px; border: 2px solid #EEE;"></div>
-        
+        <div id="map" style="height: 350px; border-radius: 20px; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);"></div>
         ${state.isNear ? `
-            <h1 style="color:var(--success-color)">¡Punto Encontrado!</h1>
-            <div class="clue-card" style="border-left-color: var(--success-color);">
-                <p style="font-weight:600;">${pt.successMessage}</p>
-            </div>
+            <h1 style="color:var(--success-color)">¡Llegaste!</h1>
+            <div class="clue-card" style="border-left-color: var(--success-color);"><p>${pt.successMessage}</p></div>
             <button class="btn" onclick="${pt.isFinal ? 'openChest()' : 'next()'}">
-                ${pt.isFinal ? 'REVELAR TESORO' : 'SIGUIENTE ETAPA'}
+                ${pt.isFinal ? 'REVELAR SECRETO' : 'SIGUIENTE RUTA'}
             </button>
         ` : `
-            <h1>Etapa ${pt.id}</h1>
             <div class="clue-card">
-                <p>"${pt.clue}"</p>
-                <div id="distance-indicator" class="cold">Calculando ruta...</div>
+                <p style="font-size: 0.9rem; font-style: italic; color: var(--text-secondary);">"${pt.clue}"</p>
+                <div id="distance-indicator" class="cold">Calculando trayectoria...</div>
             </div>
         `}
     `;
-
-    setTimeout(() => {
-        initGoogleMap(pt.lat, pt.lng);
-    }, 50);
-}
-
-function renderFinal() {
-    app.innerHTML = `
-        <div style="padding-top:20px;">
-            <h1>¡Misión Cumplida!</h1>
-            <div id="lottie-box" style="height:300px;"></div>
-            <div class="final-card" id="chest-message" style="display:none;">
-                <h2 style="color:var(--gold); margin-bottom:15px;">Para mi exploradora favorita</h2>
-                <p>¡Felicidades por completar todo el recorrido! Has demostrado ser una experta en aventuras.</p>
-                <div id="croquis-container" style="margin-top:15px;">
-                    </div>
-            </div>
-        </div>
-    `;
-    
-    loadAnim('https://lottie.host/9e5352c7-0f89-4972-88f6-a9f9392f6645/6B2m7aYl1r.json');
-
-    setTimeout(() => {
-        document.getElementById('chest-message').style.display = 'block';
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }, 2500);
+    setTimeout(() => initGoogleMap(pt.lat, pt.lng), 50);
 }
 
 /* =========================================================
-   LÓGICA DE GOOGLE MAPS & GPS
+   LÓGICA DE MAPAS (UBER/PUNTOS STYLE)
    ========================================================= */
 
 function initGoogleMap(tLat, tLng) {
     const target = { lat: tLat, lng: tLng };
-    
     directionsService = new google.maps.DirectionsService();
+    
+    // Configuración de "Puntitos" de navegación peatonal
+    const lineSymbol = { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 1, scale: 3 };
+    
     directionsRenderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
         polylineOptions: {
-            strokeColor: "#3498db",
-            strokeWeight: 6,
-            strokeOpacity: 0.8
+            strokeColor: "#4285F4",
+            strokeOpacity: 0, // Hacemos la línea invisible para mostrar solo los puntos
+            icons: [{ icon: lineSymbol, offset: "0", repeat: "15px" }]
         }
     });
 
     map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 18,
+        zoom: 19,
         center: target,
         disableDefaultUI: true,
-        styles: [
-            { "featureType": "poi", "stylers": [{ "visibility": "off" }] },
-            { "featureType": "transit", "stylers": [{ "visibility": "off" }] }
-        ]
+        gestureHandling: "greedy",
+        styles: [{ "featureType": "poi", "stylers": [{ "visibility": "off" }] }]
     });
 
     directionsRenderer.setMap(map);
 
-    // Marcador del Objetivo (Hito)
+    // Marcador de Destino (Hito)
     new google.maps.Marker({
         position: target,
         map: map,
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: "#e74c3c",
-            fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: "white",
-        }
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 12, fillColor: "#EA4335", fillOpacity: 1, strokeWeight: 3, strokeColor: "white" }
     });
 
-    // Marcador del Usuario (Ella)
+    // Marcador de Usuario (Flecha GPS)
     userMarker = new google.maps.Marker({
         position: target,
         map: map,
-        icon: {
-            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 6,
-            fillColor: "#4285F4",
-            fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: "white",
-        }
+        icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 7, fillColor: "#4285F4", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
     });
 }
 
-function calculateRoute(uLat, uLng, tLat, tLng) {
+function updateNavigation(uLat, uLng) {
+    const pt = waypoints[state.currentIndex];
     const request = {
         origin: { lat: uLat, lng: uLng },
-        destination: { lat: tLat, lng: tLng },
+        destination: { lat: pt.lat, lng: pt.lng },
         travelMode: google.maps.TravelMode.WALKING
     };
 
     directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
             directionsRenderer.setDirections(result);
+            // Auto-ajuste de cámara para ver ambos puntos
+            const bounds = result.routes[0].bounds;
+            map.fitBounds(bounds, 50); 
         }
     });
 }
@@ -204,50 +148,54 @@ function initGPS() {
         if (state.isFinished) return;
         const { latitude, longitude, heading } = pos.coords;
         const pt = waypoints[state.currentIndex];
-        
         const userPos = new google.maps.LatLng(latitude, longitude);
         const targetPos = new google.maps.LatLng(pt.lat, pt.lng);
         
         const dist = google.maps.geometry.spherical.computeDistanceBetween(userPos, targetPos);
 
-        // Actualizar UI del Mapa
         if (userMarker) {
             userMarker.setPosition(userPos);
-            if (heading) {
+            if (heading !== null) {
                 const icon = userMarker.getIcon();
                 icon.rotation = heading;
                 userMarker.setIcon(icon);
             }
         }
 
-        // Trazar línea tipo Uber
-        calculateRoute(latitude, longitude, pt.lat, pt.lng);
+        updateNavigation(latitude, longitude);
 
         const indicator = document.getElementById('distance-indicator');
         if (indicator) {
             indicator.className = dist < 15 ? 'hot' : (dist < 40 ? 'warm' : 'cold');
-            indicator.innerText = dist < 15 ? '¡HAS LLEGADO!' : `A ${Math.round(dist)} metros`;
+            indicator.innerText = dist < 15 ? '¡DESTINO ALCANZADO!' : `A ${Math.round(dist)} metros de la meta`;
         }
 
-        // Detección de llegada
-        if (dist <= config.radius && !state.isNear) {
+        if (dist <= 10 && !state.isNear) {
             state.isNear = true;
-            if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             render();
         }
-
-        // Debug Log
-        const debug = document.getElementById('debug-info');
-        if (debug) debug.innerText = `Dist: ${dist.toFixed(1)}m | Precisión: ${pos.coords.accuracy.toFixed(0)}m`;
-        
-    }, (err) => {
-        console.error("Error GPS:", err);
-    }, { enableHighAccuracy: true });
+    }, null, { enableHighAccuracy: true });
 }
 
 /* =========================================================
-   UTILIDADES Y FLUJO
+   FINALES Y AUXILIARES
    ========================================================= */
+
+function renderFinal() {
+    app.innerHTML = `
+        <div style="padding-top:20px;">
+            <h1>¡Expedición Completada!</h1>
+            <div id="lottie-box" style="height:300px;"></div>
+            <div class="final-card" id="chest-message" style="display:none;">
+                <h2 style="color:var(--gold);">El Secreto ha sido Revelado</h2>
+                <p style="margin:15px 0;">Felicidades, has seguido la ruta con éxito. Tu recompensa te espera.</p>
+            </div>
+        </div>
+    `;
+    loadAnim('https://lottie.host/9e5352c7-0f89-4972-88f6-a9f9392f6645/6B2m7aYl1r.json');
+    setTimeout(() => { document.getElementById('chest-message').style.display = 'block'; }, 2200);
+}
 
 function loadAnim(url) {
     const container = document.getElementById('lottie-box');
@@ -260,5 +208,4 @@ function start() { state.isIntro = false; render(); initGPS(); }
 function next() { state.currentIndex++; state.isNear = false; render(); }
 function openChest() { state.isFinished = true; render(); }
 
-// Inicialización
 render();
