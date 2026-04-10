@@ -1,5 +1,5 @@
 /* =========================================================
-   1. CONFIGURACIÓN Y HITOS (Mantiene tus 8 coordenadas)
+   1. CONFIGURACIÓN Y HITOS
    ========================================================= */
 const waypoints = [
     { id: 1, lat: 19.25093570220489, lng: -98.22879059918756, clue: "Inicia la travesía. Sigue los puntos hacia el primer objetivo.", msg: "¡Hito 1 alcanzado!" },
@@ -27,8 +27,8 @@ function render() {
 
     if (state.isIntro) {
         app.innerHTML = `
-            <h1 style="margin-top:20px;">Expedición Fluida</h1>
-            <p>Navegación peatonal de alta precisión.</p>
+            <h1 style="margin-top:20px;">Expedición Activa</h1>
+            <p>Navegación interactiva de alta precisión.</p>
             <div id="lottie-box" style="height:250px;"></div>
             <button class="btn" onclick="start()">Iniciar Navegación</button>
         `;
@@ -39,8 +39,8 @@ function render() {
                 <h1>¡Misión Cumplida!</h1>
                 <div id="lottie-box" style="height:300px;"></div>
                 <div class="final-card" id="chest-message" style="display:none;">
-                    <h2 style="color:#D4AF37;">El Tesoro Localizado</h2>
-                    <p>¡Felicidades! Has superado los 8 hitos con éxito.</p>
+                    <h2 style="color:#D4AF37;">Objetivo Final Localizado</h2>
+                    <p>Has completado el recorrido con éxito.</p>
                 </div>
             </div>
         `;
@@ -52,10 +52,10 @@ function render() {
             <div class="travel-timeline" style="overflow-x: auto; white-space: nowrap; padding: 10px;">
                 ${waypoints.map((w, i) => `<div class="step ${state.currentIndex > i || (state.currentIndex === i && state.isNear) ? 'completed' : (state.currentIndex === i ? 'active' : '')}" style="display:inline-flex; margin: 0 4px;">${i + 1}</div>`).join('')}
             </div>
-            <div id="map" style="height: 400px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
+            <div id="map" style="height: 450px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
             <div class="clue-card">
                 ${state.isNear ? `<h2 style="color:#27AE60">¡Hito Localizado!</h2><p>${pt.msg}</p>` : `<p>"${pt.clue}"</p>`}
-                <div id="distance-indicator" class="cold">Iniciando GPS...</div>
+                <div id="distance-indicator" class="cold">Esperando GPS...</div>
             </div>
             <div style="margin-top: 15px;">
                 ${state.isNear ? 
@@ -70,101 +70,109 @@ function render() {
 }
 
 /* =========================================================
-   3. LÓGICA DE MAPAS Y GPS FLUIDO
+   3. LÓGICA DE MAPAS Y GPS (INTERACTIVIDAD TOTAL)
    ========================================================= */
 
 function initGoogleMap(tLat, tLng) {
     const target = { lat: tLat, lng: tLng };
     directionsService = new google.maps.DirectionsService();
     
-    // Configuración estética de los puntos (Dots al estilo Google Maps)
     const lineSymbol = {
         path: google.maps.SymbolPath.CIRCLE,
         fillOpacity: 1,
-        scale: 4, // Tamaño del punto
-        fillColor: '#4285F4', // Azul Google
+        scale: 4,
+        fillColor: '#4285F4',
         strokeColor: '#FFFFFF',
         strokeWeight: 2
     };
 
     directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: true, // Quitamos marcadores por defecto
+        suppressMarkers: true,
         polylineOptions: {
-            strokeColor: "#4285F4",
-            strokeOpacity: 0, // Hacemos la línea base invisible
+            strokeColor: '#4285F4',
+            strokeOpacity: 0.5,
+            strokeWeight: 6,
             icons: [{
                 icon: lineSymbol,
-                offset: "0",
-                repeat: "20px" // Espaciado entre puntos
+                offset: '0',
+                repeat: '20px'
             }]
         }
     });
 
     map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 20,
+        zoom: 19,
         center: target,
-        disableDefaultUI: true,
-        heading: 0,
-        tilt: 45, // Inclinación para vista de navegación 3D
-        mapId: '90f87356969d889c' // Opcional: ID de mapa para estilos personalizados
+        // --- MEJORAS DE INTERACTIVIDAD ---
+        gestureHandling: 'greedy', // ¡ESTO PERMITE MOVER CON UN SOLO DEDO!
+        disableDefaultUI: false,    // Habilitamos controles por defecto (Zoom, etc.)
+        zoomControl: true,          // Botones de +/-
+        mapTypeControl: false,
+        scaleControl: true,
+        streetViewControl: false,
+        rotateControl: true,        // Permite rotar el mapa
+        fullscreenControl: false,
+        // ---------------------------------
+        tilt: 45,
+        heading: 0
     });
 
     directionsRenderer.setMap(map);
 
-    // Icono del objetivo (Punto de llegada)
+    // Hito de destino
     new google.maps.Marker({
         position: target,
         map: map,
         icon: {
             path: google.maps.SymbolPath.CIRCLE,
-            scale: 12,
-            fillColor: "#EA4335", // Rojo Google
+            scale: 10,
+            fillColor: "#EA4335",
             fillOpacity: 1,
-            strokeWeight: 3,
+            strokeWeight: 2,
             strokeColor: "white"
         }
     });
 
-    // Marcador de Usuario (Flecha de navegación tipo GPS)
+    // Marcador de Usuario
     userMarker = new google.maps.Marker({
         position: target,
         map: map,
         zIndex: 100,
-        optimized: false, // Necesario para animaciones suaves
+        optimized: false,
         icon: {
             path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 8,
+            scale: 7,
             fillColor: "#4285F4",
             fillOpacity: 1,
-            strokeWeight: 3,
+            strokeWeight: 2,
             strokeColor: "white"
         }
     });
 }
 
-// Función de interpolación para suavizar el movimiento
 function smoothMove(marker, endLatLng, map, heading) {
     let startLatLng = marker.getPosition();
     let startTime = performance.now();
-    let duration = 800; // Duración de la animación en ms (ajustar según frecuencia de GPS)
+    let duration = 800;
 
     function animate(currentTime) {
         let elapsedTime = currentTime - startTime;
-        let t = Math.min(elapsedTime / duration, 1); // Factor de interpolación (0 a 1)
+        let t = Math.min(elapsedTime / duration, 1);
 
         let lat = startLatLng.lat() + (endLatLng.lat() - startLatLng.lat()) * t;
         let lng = startLatLng.lng() + (endLatLng.lng() - startLatLng.lng()) * t;
         let currentPos = new google.maps.LatLng(lat, lng);
 
         marker.setPosition(currentPos);
-        map.panTo(currentPos); // Mueve la cámara suavemente
+        
+        // Solo centramos automáticamente si el usuario no está interactuando mucho
+        // Esto permite que ella mueva el mapa y no se le regrese a la fuerza al usuario
+        // map.panTo(currentPos); 
 
         if (t < 1) {
             requestAnimationFrame(animate);
         } else {
-            // Al finalizar, ajustamos el heading si está disponible
             if (heading !== null && heading !== undefined) {
-                map.setHeading(heading);
                 const icon = marker.getIcon();
                 icon.rotation = heading;
                 marker.setIcon(icon);
@@ -185,6 +193,11 @@ function updatePath(uLat, uLng) {
     directionsService.route(request, (result, status) => {
         if (status === 'OK') {
             directionsRenderer.setDirections(result);
+            const leg = result.routes[0].legs[0];
+            const indicator = document.getElementById('distance-indicator');
+            if (indicator) {
+                indicator.innerHTML = `Llegada en <strong>${leg.duration.text}</strong> (${leg.distance.text})`;
+            }
         }
     });
 }
@@ -192,40 +205,30 @@ function updatePath(uLat, uLng) {
 function initGPS() {
     navigator.geolocation.watchPosition(pos => {
         if (state.isFinished) return;
-        const { latitude, longitude, heading, accuracy } = pos.coords;
+        const { latitude, longitude, heading } = pos.coords;
         const pt = waypoints[state.currentIndex];
         
         const userPos = new google.maps.LatLng(latitude, longitude);
         const targetPos = new google.maps.LatLng(pt.lat, pt.lng);
         const dist = google.maps.geometry.spherical.computeDistanceBetween(userPos, targetPos);
 
-        // Si es la primera posición, fijamos sin animar
         if (!previousPosition) {
             userMarker.setPosition(userPos);
             map.setCenter(userPos);
             previousPosition = userPos;
         } else {
-            // Movimiento suavizado del marcador y la cámara
             smoothMove(userMarker, userPos, map, heading);
             previousPosition = userPos;
         }
 
-        // Trazar la ruta peatonal (línea de puntos)
         updatePath(latitude, longitude);
 
-        const indicator = document.getElementById('distance-indicator');
-        if (indicator) {
-            indicator.innerText = dist < 15 ? '¡CASI LLEGAS!' : `A ${Math.round(dist)}m de la meta`;
-            indicator.className = dist < 10 ? 'hot' : 'cold';
-        }
-
-        // Radio de llegada de 5 metros
-        if (dist <= 5 && !state.isNear) {
+        if (dist <= 6 && !state.isNear) {
             state.isNear = true;
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             render();
         }
-    }, err => console.error(err), { enableHighAccuracy: true });
+    }, null, { enableHighAccuracy: true });
 }
 
 /* =========================================================
@@ -251,7 +254,6 @@ function loadAnim(url) {
     lottie.loadAnimation({ container, renderer: 'svg', loop: true, autoplay: true, path: url });
 }
 
-// ARRANQUE INICIAL
 document.addEventListener('DOMContentLoaded', () => {
     render();
 });
