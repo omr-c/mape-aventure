@@ -1,5 +1,5 @@
 /* =========================================================
-   CONFIGURACIÓN Y ESTADOS (Mantiene tus 8 coordenadas)
+   1. CONFIGURACIÓN Y HITOS
    ========================================================= */
 const waypoints = [
     { id: 1, lat: 19.25093570220489, lng: -98.22879059918756, clue: "Inicia la travesía. Sigue los puntos hacia el primer objetivo.", msg: "¡Hito 1 alcanzado!" },
@@ -16,14 +16,66 @@ let state = { currentIndex: 0, isIntro: true, isNear: false, isFinished: false }
 let map, userMarker, directionsService, directionsRenderer;
 
 /* =========================================================
-   INICIALIZACIÓN DE MAPA "MODO CAMINATA"
+   2. FUNCIONES DE INTERFAZ (RENDERERS)
+   ========================================================= */
+
+function render() {
+    const app = document.getElementById('app-container');
+    if (!app) return;
+    app.innerHTML = '';
+
+    if (state.isIntro) {
+        app.innerHTML = `
+            <h1 style="margin-top:20px;">Expedición Activa</h1>
+            <p>Navegación por coordenadas satelitales lista.</p>
+            <div id="lottie-box" style="height:250px;"></div>
+            <button class="btn" onclick="start()">Iniciar Seguimiento</button>
+        `;
+        setTimeout(() => loadAnim('https://lottie.host/7e604f14-9492-49f9-9f79-e3623f990928/S0W9z8Cg0r.json'), 100);
+    } else if (state.isFinished) {
+        app.innerHTML = `
+            <div style="padding-top:20px;">
+                <h1>¡Misión Cumplida!</h1>
+                <div id="lottie-box" style="height:300px;"></div>
+                <div class="final-card" id="chest-message" style="display:none;">
+                    <h2 style="color:#D4AF37;">El Tesoro de la Excursión</h2>
+                    <p>¡Felicidades! Has demostrado ser una gran exploradora.</p>
+                </div>
+            </div>
+        `;
+        loadAnim('https://lottie.host/9e5352c7-0f89-4972-88f6-a9f9392f6645/6B2m7aYl1r.json');
+        setTimeout(() => { document.getElementById('chest-message').style.display = 'block'; }, 2200);
+    } else {
+        const pt = waypoints[state.currentIndex];
+        app.innerHTML = `
+            <div class="travel-timeline" style="overflow-x: auto; white-space: nowrap; padding: 10px;">
+                ${waypoints.map((w, i) => `<div class="step ${state.currentIndex > i || (state.currentIndex === i && state.isNear) ? 'completed' : (state.currentIndex === i ? 'active' : '')}" style="display:inline-flex; margin: 0 4px;">${i + 1}</div>`).join('')}
+            </div>
+            <div id="map" style="height: 380px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
+            <div class="clue-card">
+                ${state.isNear ? `<h2 style="color:#27AE60">¡Hito Localizado!</h2><p>${pt.msg}</p>` : `<p>"${pt.clue}"</p>`}
+                <div id="distance-indicator" class="cold">Iniciando GPS...</div>
+            </div>
+            <div style="margin-top: 15px;">
+                ${state.isNear ? 
+                    `<button class="btn" onclick="${pt.isFinal ? 'openChest()' : 'next()'}">${pt.isFinal ? 'REVELAR FINAL' : 'SIGUIENTE TRAMO'}</button>` : 
+                    `<input type="text" id="bypass-code" placeholder="Código" style="padding: 12px; border-radius: 12px; border: 1px solid #ddd; width: 50%;">
+                     <button class="btn" onclick="checkBypass()" style="padding: 10px 15px; background:#4285F4; color:white; border:none; border-radius:10px;">OK</button>`
+                }
+            </div>
+        `;
+        setTimeout(() => initGoogleMap(pt.lat, pt.lng), 50);
+    }
+}
+
+/* =========================================================
+   3. LÓGICA DE MAPAS Y GPS
    ========================================================= */
 
 function initGoogleMap(tLat, tLng) {
     const target = { lat: tLat, lng: tLng };
     directionsService = new google.maps.DirectionsService();
     
-    // Configuración estética de los puntos (Dots)
     const lineSymbol = {
         path: google.maps.SymbolPath.CIRCLE,
         fillOpacity: 1,
@@ -37,12 +89,8 @@ function initGoogleMap(tLat, tLng) {
         suppressMarkers: true,
         polylineOptions: {
             strokeColor: "#4285F4",
-            strokeOpacity: 0, // Línea base invisible
-            icons: [{
-                icon: lineSymbol,
-                offset: "0",
-                repeat: "20px" // Espaciado entre puntos
-            }]
+            strokeOpacity: 0,
+            icons: [{ icon: lineSymbol, offset: "0", repeat: "20px" }]
         }
     });
 
@@ -50,135 +98,76 @@ function initGoogleMap(tLat, tLng) {
         zoom: 20,
         center: target,
         disableDefaultUI: true,
-        heading: 0,
-        tilt: 45, // Inclinación tipo navegación
-        mapId: '90f87356969d889c' // Opcional: ID de mapa personalizado
+        tilt: 45
     });
 
     directionsRenderer.setMap(map);
 
-    // Icono del objetivo (Punto de llegada)
+    // Marcador Objetivo
     new google.maps.Marker({
         position: target,
         map: map,
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 12,
-            fillColor: "#EA4335",
-            fillOpacity: 1,
-            strokeWeight: 3,
-            strokeColor: "white"
-        }
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#EA4335", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
     });
 
-    // Marcador de Usuario (Flecha de navegación)
+    // Marcador Usuario
     userMarker = new google.maps.Marker({
         position: target,
         map: map,
-        zIndex: 100,
-        icon: {
-            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 8,
-            fillColor: "#4285F4",
-            fillOpacity: 1,
-            strokeWeight: 3,
-            strokeColor: "white"
-        }
-    });
-}
-
-function updatePath(uLat, uLng) {
-    const pt = waypoints[state.currentIndex];
-    const request = {
-        origin: { lat: uLat, lng: uLng },
-        destination: { lat: pt.lat, lng: pt.lng },
-        travelMode: google.maps.TravelMode.WALKING
-    };
-
-    directionsService.route(request, (result, status) => {
-        if (status === 'OK') {
-            directionsRenderer.setDirections(result);
-            
-            // Simulación de rotación de cámara
-            const step = result.routes[0].legs[0].steps[0];
-            if (step) {
-                // Orientamos el mapa ligeramente hacia el siguiente paso
-                map.panTo({ lat: uLat, lng: uLng });
-            }
-        }
+        icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 7, fillColor: "#4285F4", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
     });
 }
 
 function initGPS() {
     navigator.geolocation.watchPosition(pos => {
         if (state.isFinished) return;
-        const { latitude, longitude, heading, accuracy } = pos.coords;
+        const { latitude, longitude, heading } = pos.coords;
         const pt = waypoints[state.currentIndex];
         
         const userPos = new google.maps.LatLng(latitude, longitude);
         const targetPos = new google.maps.LatLng(pt.lat, pt.lng);
         const dist = google.maps.geometry.spherical.computeDistanceBetween(userPos, targetPos);
 
-        // Actualizar marcador y rotación
         if (userMarker) {
             userMarker.setPosition(userPos);
             if (heading !== null) {
                 const icon = userMarker.getIcon();
                 icon.rotation = heading;
                 userMarker.setIcon(icon);
-                map.setHeading(heading); // Rota el mapa con ella
+                map.setHeading(heading);
             }
         }
 
-        updatePath(latitude, longitude);
+        const request = {
+            origin: userPos,
+            destination: targetPos,
+            travelMode: google.maps.TravelMode.WALKING
+        };
+
+        directionsService.route(request, (result, status) => {
+            if (status === 'OK') directionsRenderer.setDirections(result);
+        });
 
         const indicator = document.getElementById('distance-indicator');
         if (indicator) {
-            indicator.innerText = dist < 15 ? '¡CASI LLEGAS!' : `A ${Math.round(dist)}m de la meta`;
-            indicator.className = dist < 10 ? 'hot' : 'cold';
+            indicator.innerText = dist < 15 ? '¡ESTÁS MUY CERCA!' : `A ${Math.round(dist)}m de la meta`;
         }
 
-        // Radio de llegada de 5 metros
         if (dist <= 5 && !state.isNear) {
             state.isNear = true;
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             render();
         }
-    }, err => console.error(err), { enableHighAccuracy: true });
+    }, null, { enableHighAccuracy: true });
 }
 
 /* =========================================================
-   FUNCIONES DE FLUJO (start, next, render, etc.)
+   4. CONTROL DE FLUJO Y AUXILIARES
    ========================================================= */
-// Mantén las funciones de renderIntro, renderNavigation, checkBypass, 
-// next, start y renderFinal del código anterior.
 
 function start() { state.isIntro = false; render(); initGPS(); }
 function next() { state.currentIndex++; state.isNear = false; render(); }
 function openChest() { state.isFinished = true; render(); }
-
-function renderNavigation() {
-    const pt = waypoints[state.currentIndex];
-    const app = document.getElementById('app-container');
-    app.innerHTML = `
-        <div class="travel-timeline" style="overflow-x: auto; white-space: nowrap; padding: 10px;">
-            ${waypoints.map((w, i) => `<div class="step ${state.currentIndex > i || (state.currentIndex === i && state.isNear) ? 'completed' : (state.currentIndex === i ? 'active' : '')}" style="display:inline-flex; margin: 0 4px;">${i + 1}</div>`).join('')}
-        </div>
-        <div id="map" style="height: 380px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
-        <div class="clue-card">
-            ${state.isNear ? `<h2 style="color:#27AE60">¡Hito Localizado!</h2><p>Código de acceso validado.</p>` : `<p>"${pt.clue}"</p>`}
-            <div id="distance-indicator" class="cold">Iniciando GPS...</div>
-        </div>
-        <div style="margin-top: 15px;">
-            ${state.isNear ? 
-                `<button class="btn" onclick="${pt.isFinal ? 'openChest()' : 'next()'}">${pt.isFinal ? 'FINALIZAR RUTA' : 'SIGUIENTE TRAMO'}</button>` : 
-                `<input type="text" id="bypass-code" placeholder="Código" style="padding: 12px; border-radius: 12px; border: 1px solid #ddd; width: 50%;">
-                 <button class="btn" onclick="checkBypass()" style="padding: 10px 15px;">OK</button>`
-            }
-        </div>
-    `;
-    setTimeout(() => initGoogleMap(pt.lat, pt.lng), 50);
-}
 
 function checkBypass() {
     const input = document.getElementById('bypass-code').value;
@@ -188,4 +177,14 @@ function checkBypass() {
     }
 }
 
-render();
+function loadAnim(url) {
+    const container = document.getElementById('lottie-box');
+    if (!container) return;
+    container.innerHTML = '';
+    lottie.loadAnimation({ container, renderer: 'svg', loop: true, autoplay: true, path: url });
+}
+
+// ARRANQUE INICIAL
+document.addEventListener('DOMContentLoaded', () => {
+    render();
+});
