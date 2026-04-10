@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mape Aventure</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
@@ -15,9 +15,10 @@
     
     <script src="main.js"></script>
     <script>
-        // Esta funcion asegura que el mapa cargue despues de que el API de Google este listo
+        // Punto de entrada global una vez carga Google
         function initApp() {
-            console.log("Google Maps API Listo");
+            window.isGoogleMapsReady = true;
+            console.log("Infraestructura de Mapas lista.");
         }
     </script>
 </body>
