@@ -1,5 +1,5 @@
 /* =========================================================
-   1. CONFIGURACIÓN Y HITOS
+   1. CONFIGURACIÓN Y HITOS (Target Coordinates)
    ========================================================= */
 const waypoints = [
     { id: 1, lat: 19.25093570220489, lng: -98.22879059918756, clue: "Inicia la travesía. Sigue los puntos hacia el primer objetivo.", msg: "¡Hito 1 alcanzado!" },
@@ -27,8 +27,8 @@ function render() {
 
     if (state.isIntro) {
         app.innerHTML = `
-            <h1 style="margin-top:20px;">Expedición Activa</h1>
-            <p>Navegación interactiva de alta precisión.</p>
+            <h1 style="margin-top:20px;">Sistemas de Navegación</h1>
+            <p>Exploración con capas de satélite y tracking real-time.</p>
             <div id="lottie-box" style="height:250px;"></div>
             <button class="btn" onclick="start()">Iniciar Navegación</button>
         `;
@@ -36,11 +36,11 @@ function render() {
     } else if (state.isFinished) {
         app.innerHTML = `
             <div style="padding-top:20px;">
-                <h1>¡Misión Cumplida!</h1>
+                <h1>¡Objetivo Logrado!</h1>
                 <div id="lottie-box" style="height:300px;"></div>
                 <div class="final-card" id="chest-message" style="display:none;">
-                    <h2 style="color:#D4AF37;">Objetivo Final Localizado</h2>
-                    <p>Has completado el recorrido con éxito.</p>
+                    <h2 style="color:#D4AF37;">Localización Finalizada</h2>
+                    <p>Has navegado con éxito a través de todos los puntos.</p>
                 </div>
             </div>
         `;
@@ -52,15 +52,15 @@ function render() {
             <div class="travel-timeline" style="overflow-x: auto; white-space: nowrap; padding: 10px;">
                 ${waypoints.map((w, i) => `<div class="step ${state.currentIndex > i || (state.currentIndex === i && state.isNear) ? 'completed' : (state.currentIndex === i ? 'active' : '')}" style="display:inline-flex; margin: 0 4px;">${i + 1}</div>`).join('')}
             </div>
-            <div id="map" style="height: 450px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
+            <div id="map" style="height: 480px; border-radius: 24px; margin-bottom: 12px; border: 3px solid #FFF; box-shadow: 0 8px 24px rgba(0,0,0,0.12);"></div>
             <div class="clue-card">
                 ${state.isNear ? `<h2 style="color:#27AE60">¡Hito Localizado!</h2><p>${pt.msg}</p>` : `<p>"${pt.clue}"</p>`}
-                <div id="distance-indicator" class="cold">Esperando GPS...</div>
+                <div id="distance-indicator" class="cold">Calculando ruta...</div>
             </div>
             <div style="margin-top: 15px;">
                 ${state.isNear ? 
-                    `<button class="btn" onclick="${pt.isFinal ? 'openChest()' : 'next()'}">${pt.isFinal ? 'REVELAR FINAL' : 'SIGUIENTE TRAMO'}</button>` : 
-                    `<input type="text" id="bypass-code" placeholder="Código" style="padding: 12px; border-radius: 12px; border: 1px solid #ddd; width: 50%;">
+                    `<button class="btn" onclick="${pt.isFinal ? 'openChest()' : 'next()'}">${pt.isFinal ? 'FINALIZAR' : 'SIGUIENTE HITO'}</button>` : 
+                    `<input type="text" id="bypass-code" placeholder="Código Maestro" style="padding: 12px; border-radius: 12px; border: 1px solid #ddd; width: 50%;">
                      <button class="btn" onclick="checkBypass()" style="padding: 10px 15px; background:#4285F4; color:white; border:none; border-radius:10px;">OK</button>`
                 }
             </div>
@@ -70,13 +70,14 @@ function render() {
 }
 
 /* =========================================================
-   3. LÓGICA DE MAPAS Y GPS (INTERACTIVIDAD TOTAL)
+   3. LÓGICA DE MAPAS (CAPAS E INTERACCIÓN)
    ========================================================= */
 
 function initGoogleMap(tLat, tLng) {
     const target = { lat: tLat, lng: tLng };
     directionsService = new google.maps.DirectionsService();
     
+    // Configuración visual combinada: Línea + Puntos
     const lineSymbol = {
         path: google.maps.SymbolPath.CIRCLE,
         fillOpacity: 1,
@@ -101,25 +102,26 @@ function initGoogleMap(tLat, tLng) {
     });
 
     map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 19,
+        zoom: 18,
         center: target,
-        // --- MEJORAS DE INTERACTIVIDAD ---
-        gestureHandling: 'greedy', // ¡ESTO PERMITE MOVER CON UN SOLO DEDO!
-        disableDefaultUI: false,    // Habilitamos controles por defecto (Zoom, etc.)
-        zoomControl: true,          // Botones de +/-
-        mapTypeControl: false,
-        scaleControl: true,
-        streetViewControl: false,
-        rotateControl: true,        // Permite rotar el mapa
-        fullscreenControl: false,
-        // ---------------------------------
+        gestureHandling: 'greedy', 
+        disableDefaultUI: false,
+        // --- ACTIVACIÓN DE CAPAS ---
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_LEFT
+        },
+        // ---------------------------
+        zoomControl: true,
+        rotateControl: true,
         tilt: 45,
         heading: 0
     });
 
     directionsRenderer.setMap(map);
 
-    // Hito de destino
+    // Marcador del Hito Actual
     new google.maps.Marker({
         position: target,
         map: map,
@@ -133,7 +135,7 @@ function initGoogleMap(tLat, tLng) {
         }
     });
 
-    // Marcador de Usuario
+    // Marcador del Usuario (Navegador)
     userMarker = new google.maps.Marker({
         position: target,
         map: map,
@@ -150,6 +152,7 @@ function initGoogleMap(tLat, tLng) {
     });
 }
 
+// Suavizado de movimiento
 function smoothMove(marker, endLatLng, map, heading) {
     let startLatLng = marker.getPosition();
     let startTime = performance.now();
@@ -165,10 +168,6 @@ function smoothMove(marker, endLatLng, map, heading) {
 
         marker.setPosition(currentPos);
         
-        // Solo centramos automáticamente si el usuario no está interactuando mucho
-        // Esto permite que ella mueva el mapa y no se le regrese a la fuerza al usuario
-        // map.panTo(currentPos); 
-
         if (t < 1) {
             requestAnimationFrame(animate);
         } else {
@@ -182,12 +181,13 @@ function smoothMove(marker, endLatLng, map, heading) {
     requestAnimationFrame(animate);
 }
 
+// Función que traza la ruta peatonal
 function updatePath(uLat, uLng) {
     const pt = waypoints[state.currentIndex];
     const request = {
         origin: { lat: uLat, lng: uLng },
         destination: { lat: pt.lat, lng: pt.lng },
-        travelMode: google.maps.TravelMode.WALKING
+        travelMode: google.maps.TravelMode.WALKING 
     };
 
     directionsService.route(request, (result, status) => {
@@ -213,16 +213,18 @@ function initGPS() {
         const dist = google.maps.geometry.spherical.computeDistanceBetween(userPos, targetPos);
 
         if (!previousPosition) {
+            // PRIMER TRAZADO: Inmediato al detectar señal
             userMarker.setPosition(userPos);
             map.setCenter(userPos);
+            updatePath(latitude, longitude); 
             previousPosition = userPos;
         } else {
             smoothMove(userMarker, userPos, map, heading);
+            updatePath(latitude, longitude);
             previousPosition = userPos;
         }
 
-        updatePath(latitude, longitude);
-
+        // Detección de hito (Radio de 6 metros para mayor seguridad en campo)
         if (dist <= 6 && !state.isNear) {
             state.isNear = true;
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
