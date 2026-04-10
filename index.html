@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mape Aventure - Expedicion</title>
+    <title>Mape Aventure</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
 </head>
 <body>
 
-    <div id="app-container">
-        </div>
+    <div id="app-container"></div>
 
-    <script>
-      (g=>{var h="",e=document,a=window,i="google",c="javascript",m="./js",l="importLibrary",q="__googleMapsCallback",t=e.createElement("script");
-      // REEMPLAZA TU KEY AQUÍ ABAJO
-      t.src=`https://maps.${i}apis.com/maps/api/js?key=AIzaSyCzkfQup4PnCwsGsS06-wGiN9OLmIP0PRA&callback=${q}&libraries=geometry,marker&v=beta`;
-      t.async=true;a[q]=function(){if(h)console.log(h);};e.head.append(t);})(/* Loader */);
-    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzkfQup4PnCwsGsS06-wGiN9OLmIP0PRA&libraries=geometry,marker&callback=initApp" async defer></script>
     
     <script src="main.js"></script>
+    <script>
+        // Esta funcion asegura que el mapa cargue despues de que el API de Google este listo
+        function initApp() {
+            console.log("Google Maps API Listo");
+        }
+    </script>
 </body>
 </html>
