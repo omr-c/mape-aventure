@@ -1,135 +1,114 @@
-:root {
-    --bg-color: #FFFFFF;
-    --text-main: #2C3E50;
-    --accent-adventure: #3A5F41;
-    --accent-active: #8E6E46;
-    --success-color: #27AE60;
-    --gold: #D4AF37;
-    --font-titles: 'Montserrat', sans-serif;
-    --font-body: 'Lora', serif;
+/* =========================================================
+   ESTILOS BASE
+   ========================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
-    font-family: var(--font-body);
-    background-color: var(--bg-color);
-    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #e5e5f7;
+    color: #202124;
+    overflow: hidden; /* Evita el scroll innecesario en moviles */
+}
+
+#app-container {
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 15px;
-    overflow-x: hidden;
-}
-
-#app-container { width: 100%; max-width: 450px; text-align: center; }
-
-/* --- MAPA --- */
-#map {
-    width: 100%;
-    height: 220px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 1;
-    border: 2px solid #EEE;
-}
-
-/* --- TIMELINE --- */
-.travel-timeline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    margin-bottom: 15px;
     position: relative;
-}
-
-.timeline-line {
-    position: absolute;
-    top: 50%;
-    left: 50px;
-    right: 50px;
-    height: 2px;
-    background: #E0E0E0;
-    z-index: 1;
-    transform: translateY(-50%);
-}
-
-.step {
-    width: 35px;
-    height: 35px;
     background: white;
-    border: 2px solid #E0E0E0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    font-weight: bold;
-    font-size: 0.8rem;
-    font-family: var(--font-titles);
-    transition: 0.4s;
 }
 
-.step.active { border-color: var(--accent-adventure); background: var(--accent-adventure); color: white; transform: scale(1.1); }
-.step.completed { border-color: var(--success-color); background: var(--success-color); color: white; }
+/* =========================================================
+   PANTALLA DE INTRODUCCION
+   ========================================================= */
+h1 {
+    font-size: 24px;
+    color: #1a73e8;
+    margin-bottom: 10px;
+}
 
-/* --- CARDS & BUTTONS --- */
-h1 { font-family: var(--font-titles); font-size: 1.5rem; color: var(--accent-adventure); margin-bottom: 10px; }
+p {
+    color: #5f6368;
+    font-size: 14px;
+}
 
+/* =========================================================
+   CONTENEDOR DEL MAPA
+   ========================================================= */
+#map {
+    flex-grow: 1;
+    height: 100%;
+    width: 100%;
+}
+
+/* =========================================================
+   SELECTOR DE TRANSPORTE (FLOTANTE)
+   ========================================================= */
+.transport-selector {
+    transition: all 0.3s ease;
+}
+
+.transport-selector div {
+    transition: background-color 0.2s ease;
+}
+
+/* =========================================================
+   TARJETA DE INFORMACION (CLUE CARD)
+   ========================================================= */
 .clue-card {
-    background: #FFFEF9;
-    padding: 18px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-left: 6px solid var(--accent-active);
-    text-align: left;
-    margin-bottom: 15px;
+    transition: transform 0.3s ease-out;
+    border: 1px solid #dadce0;
 }
 
+#distance-info {
+    font-size: 16px;
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
 .btn {
-    font-family: var(--font-titles);
-    font-weight: 700;
-    padding: 16px 25px;
-    border: 2px solid var(--accent-adventure);
-    background: transparent;
-    color: var(--accent-adventure);
-    border-radius: 50px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    text-transform: uppercase;
+    box-shadow: 0 1px 3px rgba(60,64,67, 0.3), 0 4px 8px 3px rgba(60,64,67, 0.15);
+    width: auto;
+    min-width: 150px;
+    outline: none;
 }
 
-.btn:active { background: var(--accent-adventure); color: white; }
-
-#distance-indicator {
-    font-family: var(--font-titles);
-    font-weight: 700;
-    font-size: 0.7rem;
-    padding: 5px 10px;
-    border-radius: 20px;
-    margin-top: 8px;
-    display: inline-block;
+.btn:active {
+    background-color: #1765cc;
+    transform: scale(0.98);
 }
 
-.cold { background: #F0F3F4; color: #95A5A6; }
-.warm { background: #FEF5E7; color: #E67E22; }
-.hot { background: #D4EFDF; color: #27AE60; animation: pulse 1s infinite; }
-
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-
-/* --- FINAL SCREEN --- */
-.final-card {
-    background: white;
-    border: 2px solid var(--gold);
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    margin-top: -20px;
-    animation: slideIn 0.8s ease-out;
+/* Animacion para el boton de llegada */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
-@keyframes slideIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+.btn-arrival {
+    animation: pulse 2s infinite;
+    background-color: #34a853; /* Verde para llegada */
+}
 
-#debug-info { position: fixed; bottom: 5px; left: 5px; font-size: 8px; color: #CCC; }
+/* =========================================================
+   LOTTIE ANIMATION CONTAINER
+   ========================================================= */
+#lottie-box {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
